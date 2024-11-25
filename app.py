@@ -231,31 +231,24 @@ def redeem():
 
     return jsonify({"message": "Redemption successful", "eco_coin": user.eco_coin}), 200
 
-@app.route('/api/ecocoins/all', methods=['POST'])
+@app.route('/api/ecocoins/all', methods=['POST', 'GET'])
 @jwt_required()
 def get_coins():
-    
-    # Get the current user from the JWT token
-    current_user_id = get_jwt_identity()
-    
-    # Parse the incoming request
-    data = request.get_json()
-    points = data.get('points')
-    
-    # Validate points (ensure it's a positive number)
-    if not points or points <= 0:
-        return jsonify({"error": "Invalid points"}), 400
+    # Get the current user's identity
+    current_user = get_jwt_identity()
 
-    # Get the user from the database
-    user = User.query.get(current_user_id)
-    if not user:
-        return jsonify({"error": "User not found"}), 404
+    try:
+        # Fetch the user from the database
+        user = User.query.get(current_user)
 
-    # Update the user's eco coins
-    user.eco_coin += points
-    db.session.commit()
+        if not user:
+            return jsonify({"message": "მომხმარებელი ვერ მოიძებნა"}), 404
 
-    return jsonify({"message": "Redemption successful", "eco_coin": user.eco_coin}), 200
+        # Return the total EcoCoins
+        return jsonify({"totalEcoCoins": user.eco_coin}), 200
+    except Exception as e:
+        return jsonify({"message": "შეცდომა მონაცემების მიღებაში", "error": str(e)}), 500
+
 
 
 
