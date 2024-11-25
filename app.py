@@ -117,20 +117,25 @@ def create_event():
     current_user_id = get_jwt_identity()
     current_user = User.query.get(current_user_id)
 
-    new_event = Event(
-        name=data['name'],
-        location=data['location'],
-        date=data['date'],
-        time=data['time'],
-        description=data.get('description', ''),
-        image_url=data.get('image_url', ''),
-        participants=[],  # Corrected: Initialize as an empty list
-        awards=data.get('awards', '')
-    )
-    db.session.add(new_event)
-    db.session.commit()
-    return jsonify({"message": "Event created successfully"}), 201
+    try:
 
+        new_event = Event(
+            name=data['name'],
+            location=data['location'],
+            date=data['date'],
+            time=data['time'],
+            description=data.get('description', ''),
+            image_url=data.get('image_url', ''),
+            participants=[],  # Corrected: Initialize as an empty list
+            awards=data.get('awards', '')
+        )
+        db.session.add(new_event)
+        db.session.commit()
+        return jsonify({"message": "Event created successfully"}), 201
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500
+    
 @app.route('/api/events/<int:event_id>', methods=['DELETE'])
 @jwt_required()
 def delete_event(event_id):
